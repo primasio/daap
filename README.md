@@ -244,5 +244,4 @@ The following sections detail some of the important contracts:
 
 [8] [Benedikt B¨unz. Jonathan Bootle. Bulletproofs: Short Proofs for Confidential Transactions and More](https://eprint.iacr.org/2017/1066.pdf)
 
-[9] [Mary Maller. Sean Bowe. Sonic: Zero-Knowledge SNARKs from Linear-Size Universal and
-Updatable Structured Reference Strings](https://eprint.iacr.org/2019/099.pdf)
+[9] [Mary Maller. Sean Bowe. Sonic: Zero-Knowledge SNARKs from Linear-Size Universal and Updatable Structured Reference Strings](https://eprint.iacr.org/2019/099.pdf)

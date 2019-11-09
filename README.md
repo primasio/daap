@@ -1,46 +1,45 @@
-# Digital Assets Private Publication and Authorization Protocol
+# Digital Assets Private Publication and Authorization on Blockchain using ZKP
 
-Digital Assets Private Publication and Authorization on Blockchain using ZKP
+## Introduction
 
-# Introduction
+Zero-Knowledge Proof is one of the most promising research areas in the Blockchain industry. More recently, attention has been drawn to its potential in solving the 2 largest obstacles to mainstream adoption of Blockchain, extensibility and privacy.
 
-Zero-Knowledge Proof has become one of the most promising research areas in the Blockchain industry recently, due to its potential on solving the largest 2 problems that stopping Blockchain from massive adoption, which are extensibility problem and privacy problem, at once.
+As is well recognized, data recorded on Blockchain is open to the public. Everyone can read blocks and extract the data inside, which renders Blockchain unusable for a wide range of situations where data privacy is important. Take Bitcoin as an example in which the UTXO model is used to record token transfers. Anonymity is achieved by the separation of addresses from the real person but if the correspondence between one address and the person is exposed, with the help of some on-chain data analytics tools, one could easily find out all the related UTXOs of this person and calculate his total balance. The same thing happens for smart contract Blockchains such as Ethereum, where all the contract codes, all the invocations of the contracts and their parameters are visible to everyone.
 
-As well recognized, the data recorded on the Blockchain is publicly open. Everyone can read from the blocks and extract the data inside, which stops Blockchain to be used in a wide range of scenarios where data privacy matters. Take Bitcoin as an example, in which UTXO model is used to record token transfers. The anonymity is achieved by the separation of addresses from the real person. If the correspondence between one address and the person is exposed, with the help of some on-chain data analytics tools, one could easily find out all the related UTXOs of this person and calculate his total balance. The same thing happens for smart contract Blockchains such as Ethereum, where all the contract codes, all the invocations of the contracts and their parameters are visible to everyone.
+ZKP could be used to solve those problems (we will not cover the details of how ZKP works in this paper though).  With some well-designed solutions on top of ZKP, we could implement the same functions Blockchain provides whilst at the same time, keeping all the data private. [ZCash](https://z.cash), for example, implements the same functions as Bitcoin whilst keeping all the transaction data (the sender, receiver and amount) private using a transaction mixing mechanism which is implemented using zk-SNARK.
 
-ZKP could be used to solve those problems. We will not cover the details of how ZKP works in this paper.  With some well-designed solutions on top of ZKP, we could implement the same functions Blockchain provides while at the same time keep all the data private. [ZCash](https://z.cash), for example, implements the same functions as Bitcoin, and keeps all the transaction data (the sender, receiver and amount) private using a transaction mixing mechanism which is implemented using zk-SNARK.
+Blockchains do far more than just transfer tokens, however. During this revolution of information, most enterprises are experiencing a transition from manufacturing-driven to innovation-driven value, where an enterprise's most important assets are changing from money, materials and factories to talent, knowledge (information) and human networks, or in a professional term, 'social capital'. It is becoming more and more important for enterprises to protect their data assets and create the most value from them.
 
-It is far more than token transferring that Blockchain can do. At the time of information revolution, from the perspective of enterprises, most enterprises are experiencing the transition from manufacturing driven to innovation driven, where the most important assets to an enterprise are changing from money, materials, factories to talents, knowledge (information), knowledge and human network or in a professional term, the social capital. It becomes more and more important for enterprises to protect their data assets and make the most value from them.
+Blockchain makes it easy for digital assets to be circulated but is incapable of protecting them during that circulation. ERC-721 and ERC-1155 on Ethereum, standardized Non-Fungible Tokens; this has eased the process of creating and trading digital assets on Blockchain. This transparent circulation has meant that alongside ownership of digital assets, entire transaction history is also visible. For organizations, this means their sensitive information is being leaked to the public.
 
-Blockchain makes it easy for the digital assets to circulate but is incapable of protecting them during the circulation. ERC-721 and ERC-1155 on Ethereum standardized Non-Fungible Token, which eases the process of creating and trading digital assets on Blockchain. However, the ownership of assets, the transaction history is all visible, leaking a lot of sensitive information of the enterprise to the public.
+Earlier this year, Ernst & Young released a project called [Nightfall](https://github.com/EYBlockchain/nightfall), which enables the private transactions of ERC-721 tokens on Ethereum. After transferring the tokens into a contract, later transfers of the same tokens inside the contract are made invisible to the outside world. The creation of ERC-721 tokens, however, is still public. For data assets such as photos and articles, however, what commonly happens is the authorization of use is purchased, rather than the actual ownership of the asset. This is not supported by the NFT model, and there are no existing solutions to the privacy problem in this scenario.
 
-Earlier this year, Ernst & Young released a project called [Nightfall](https://github.com/EYBlockchain/nightfall), which enables the private transactions of ERC-721 tokens on Ethereum. After transferring the tokens into a contract, later transfers of the same tokens inside the contract is invisible to the outside world. The creation of ERC-721 tokens, however, is still public. Besides, for data assets such as photos and articles, what happened commonly is the purchasing of authorization rather than the transferring of ownership. Which is not supported by the NFT model, and there are no existing solutions to the privacy problem of this scenario.
+The protocol we propose in this paper addresses this problem. The protocol supports the private registration of data assets, the private authorization of them using ZKP. In more detail, the functions of the protocol are:
 
-The protocol we proposed in this paper addresses this problem. The protocol supports the private registration of data assets, and the private authorization of them using ZKP. More specifically, the functions of the protocol are:
+***1.	Registration of digital assets on the Blockchain, without revealing information about the owner.***
 
-***1.	Registration of digital assets on the Blockchain, without revealing the information of the owner.***
+Using a photo as an example: One could register a photo on the Blockchain with only the id and hash of the photo made public. The photo's owner would not be identifiable.
 
-Let’s use photo as an example. One could register a photo on the Blockchain. Only the id and the hash of the photo is open. No one could identify the photo’s owner.
+If the owner wants to prove ownership when he publishing the photo, he could attach some text to the photo. The text could verify the ownership when querying on the Blockchain. Even with this text revealed, no one could find any other photos published by the owner on the Blockchain, nor could anyone create a fake proof of ownership.
 
-If the owner wants to prove the ownership to others when he publishes the photo on a blog, he could attach some texts to the photo, the texts could verify the ownership when querying on the Blockchain. Even with these texts revealed, no one could find any other photos the owner published on the Blockchain, nor could anyone create a fake proof of the ownership.
+***2.	Granting authorization of digital assets to users without revealing the buyer, the owner or any details of the digital asset.***
 
-***2.	Authorization of digital assets to users, without revealing the buyer, the owner and the detail of the digital asset.***
+When someone finds the photo online and wants to purchase it for their own use, they could get receive authorization from the Blockchain, without revealing the buyer or seller’s information, or even the ID of the photo being purchased.
 
-When someone finds the photo on the blog and he wants to buy it and use it on his own blog, he could get an authorization from the Blockchain, without revealing the buyer and the seller’s information, or even the ID of the photo being purchased.
+Again, if the buyer wants to prove using the photo was authorized, some text could be attached. Anyone could verify the validity of this authorization by sending this text to the Blockchain contract. The seller’s information is kept private, and no other purchase records would be able to be found.
 
-Again, if the buyer wants to prove the authorization when using the photo on his blog, some texts could be attached. Anyone could verify the validity of the authorization by sending the texts to the Blockchain contract. The seller’s information is kept private, and no other purchase records could be found.
+Although above has used a 'photo' as an example, this protocol could be used for any kind of digital asset.
 
-Despite the usage of photo as the example, the protocol could be used on any kind of digital assets.
 We will explain the protocol in detail in the next chapters.
 
-Right now, we have finished the implementation of the protocol on our own Blockchain platform and have been running tests for quite a while. In the future we will also open source the codes and publish them on Github.
+Currently we have already finished the implementation of this protocol on our own Blockchain platform and have been running tests for quite a while. In the future we intend to open source the code and publish it on Github.
 
-The transfer of ownership is not covered in our protocol since there're existing solutions for it. Our protocol could be easily integrated with the existing solutions. We will provide a fully integrated solution in the open sourced codes.
+The transfer of ownership is not covered in our protocol since there are already existing solutions for it. Our protocol could be easily integrated into existing solutions and we will provide a fully integrated solution in the open sourced codes.
 
-In our current implementation, [ZoKrates](https://github.com/Zokrates/ZoKrates) is used to develop the protocol, the ZKP algorithms used is [Groth 16](https://eprint.iacr.org/2016/260.pdf). The separation of ZKP algorithm and the upper level design allows the easy switch of ZKP algorithms. One could easily use [Bellman](https://github.com/zkcrypto/bellman) to replace ZoKrates, or using a more advanced algorithm such as [Bulletproofs](https://github.com/dalek-cryptography/bulletproofs) and [Sonic](https://eprint.iacr.org/2019/099) for better performance and the removal of trusted setup.
+In our current implementation, [ZoKrates](https://github.com/Zokrates/ZoKrates) is used to develop the protocol, the ZKP algorithm used is [Groth 16](https://eprint.iacr.org/2016/260.pdf). The separation of ZKP algorithm and the upper level design allows the easy switch of ZKP algorithms. One could easily use [Bellman](https://github.com/zkcrypto/bellman) to replace ZoKrates, or using a more advanced algorithm such as [Bulletproofs](https://github.com/dalek-cryptography/bulletproofs) and [Sonic](https://eprint.iacr.org/2019/099) for better performance and the removal of trusted setup.
 
 
-# Variables
+## Variables
 
 The variables used in the protocol are as follows:
 
@@ -59,19 +58,19 @@ The variables used in the protocol are as follows:
 | ${\phi}_L$      | The path from a leaf L to the root of a Merkle Tree          |
 | ${\Psi}_L$      | The sister path from a leaf L to the root of a Merkle Tree   |
 | $M$             | A calculation function for producing the Merkle root，the inputs are ${\Psi}_L$ and L |
-| $MT^R$          | A Merkle Tree to store Organization's registration record    |
-| $MT^Z$          | A Merkle Tree to store asset's authorization record          |
+| $MT^R$          | A Merkle tree to store organization's registration record    |
+| $MT^Z$          | A Merkle tree to store asset's authorization record          |
 |                 |                                                              |
 
-# Protocols
+## Protocols
 
-## Organization Registration
+### Organization Registration
 
 Each organization has a public-private key pair representing the ownership of the assets, we call them "asset keys". Each of them is 32 bytes, recorded as $pk^R, sk^R$ respectively, which satisfies:
 $$
 pk^R =h(sk^R)
 $$
-The organization also has a pair of public-private key representing their blockchain identity and the corresponding blockchain address, denoted as $pk^E, sk^E, addr$, respectively, generated using a standard elliptic curve digital signature algorithm(ECDSA). 
+The organization also has a pair of public-private key representing their blockchain identity and the corresponding blockchain address, denoted as $pk^E, sk^E, addr$ respectively, generated using a standard elliptic curve digital signature algorithm(ECDSA). 
 
 The organization must carefully store the private keys in the two key pairs and should not expose them.
 
@@ -99,7 +98,7 @@ The following is an example of organization A, which specifically describes the 
 
 Note: In the zero-knowledge proof generation process of ZoKrates, we can make a choice that whether the input variables are exposed, the public variables will appear in the generated proof, and the private ones will not appear.
 
-## Asset Registration
+### Asset Registration
 
 Organizations that have completed the registration are required to complete the registration process for their digital assets in accordance with the protocol in order to anonymously authorize these assets. For any digital asset, the organization needs to generate a unique numeric id for it, denoted as $\alpha$. In this protocol, the numeric id can be any data that does not exceed 32 bytes.
 
@@ -126,7 +125,7 @@ We take the organization A and asset $\alpha$ as an example to introduce the pro
 
 5. Call the method of smart contract: $Shield.register(\pi, R_A^{\alpha},\alpha)$
 
-## Asset Authorization
+### Asset Authorization
 
 A registered organization can anonymously authorize a registered asset to another registered organization. The essence of the authorization is to generate an authorization record on the blockchain, which implies the asset $\alpha$ and the information of the authorized party. We must guarantee the following points:
 
@@ -156,7 +155,7 @@ The following takes the organization A authorized assets $\alpha$ to the organiz
 7. private inputs: $[pk_B^R,sk_A^R,\alpha,{\psi}_{R_A^{\alpha}}]$;
 8. Call the method of smart contract: $Shield.authorize(\pi,Z_B^{\alpha},root_R)$.
 
-## Proof of Authorization
+### Proof of Authorization
 
 In order to show a third party that they have obtained authorization for a digital asset, the organization needs to generate a proof of authorization. The proof of authorization essentially proves the correspondence between the organization and the authorization record on the blockchain, that is:
 
@@ -181,7 +180,7 @@ The following takes the organization B and the asset $\alpha$ as an example, and
 
 10. $[\pi,pk_A^R, pk_B^R,\alpha]$ is open to everyone, representing  a proof that B has the  authorization of asset $\alpha$ from A.
 
-## Verification of Authorization
+### Verification of Authorization
 
 For the proof of authorization provided by other organizations, the validity of the authorization certificate can be verified by calling the smart contract method:
 
@@ -193,7 +192,7 @@ which returns：
 2. The information of organization  A;
 3. The information of  organization B.
 
-# Smart Contracts
+## Smart Contracts
 
 The protocol uses a series of smart contracts, including the following categories:
 
@@ -203,7 +202,7 @@ The protocol uses a series of smart contracts, including the following categorie
 
 The following sections detail some of the important contracts:
 
-##  Organization.sol
+###  Organization.sol
 
 * $register(\pi, pk_A^R, n_A, addr_A$):
   * Register the organization on the blockchain and record the correspondence between the organization's registration name, asset public key and ECDSA address.
@@ -212,7 +211,7 @@ The following sections detail some of the important contracts:
 * $get(pk^R)$:
   * Obtain the organization registration name corresponding to the asset public key $pk^R$.
 
-## Shield.sol
+### Shield.sol
 
 * $register(\pi, R_A^{\alpha},\alpha)$:
   * Register the digital asset $\alpha$ on the blockchain, where the information for organization A is hidden;
@@ -227,7 +226,7 @@ The following sections detail some of the important contracts:
 * $authorizeCheck(\pi,pk_A^R, pk_B^R,\alpha)$
   * Verify the authorization information.
 
-# Reference
+## Reference
 
 [1] [EY Global Blockchain R&D. Nightfall: Zokrates library for private token transfer over the ethereum blockchain.](https://github.com/EYBlockchain/nightfall) 
 

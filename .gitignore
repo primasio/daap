@@ -1,0 +1,11 @@
+node_modules
+.idea
+zkp/code/gm17/*/**
+!**/*.pcode
+!**/*.code
+**/out.code
+compile
+zkp/src/vkIds.json
+out.*
+out
+witness

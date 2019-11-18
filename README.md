@@ -60,7 +60,7 @@ The variables used in the protocol are as follows:
 | $M$             | A calculation function for producing the Merkle root，the inputs are ${\Psi}_L$ and L |
 | $MT^R$          | A Merkle tree to store organization's registration record    |
 | $MT^Z$          | A Merkle tree to store asset's authorization record          |
-|                 |                                                              |
+| $\sigma$        | A random salt                                                |
 
 ## Protocols
 
@@ -91,7 +91,7 @@ The following is an example of organization A, which specifically describes the 
 
 1. Generate the required two sets of public-private key pairs and the other organizational information data in a secure environment;
 2. Generate the zero knowledge proof $\pi$, including constraints:
-   * $pk_A^R=h(sk_A^R)$
+   * $pk_A^R==h(sk_A^R)$
 3. public inputs: $[pk_A^R]$
 4. private inputs: $[sk_A^R]$
 5. Call the method of smart contract: $Organization.register(\pi, pk_A^R, n_A, addr_A$)
@@ -111,19 +111,16 @@ Similarly, a zero-knowledge proof can help us achieve the first point.
 
 We take the organization A and asset $\alpha$ as an example to introduce the process of asset registration:
 
-1. Calculate $R_A^{\alpha}=h(\alpha|pk_A^R)$
+1. Generate a random salt ${\sigma}_A$
+2. Calculate $R_A^{\alpha}=h(\alpha|pk_A^R|{\sigma}_A)$
+3. Generate zero knowledge proof $\pi$, including constraints:
 
-2. Generate zero knowledge proof $\pi$, including constraints:
+   * $pk_A^R:=h(sk_A^R)$
 
-   * $pk_A^R=h(sk_A^R)$
-
-   * $R_A^{\alpha}=h(\alpha|pk_A^R)$
-
-3. public inputs: $[R_A^{\alpha},\alpha]$
-
-4. private inputs: $[sk_A^R]$
-
-5. Call the method of smart contract: $Shield.register(\pi, R_A^{\alpha},\alpha)$
+   * $R_A^{\alpha}==h(\alpha|pk_A^R|{\sigma}_A)$
+4. public inputs: $[R_A^{\alpha},\alpha]$
+5. private inputs: $[sk_A^R,{\sigma}_A]$
+6. Call the method of smart contract: $Shield.register(\pi, R_A^{\alpha},\alpha)$
 
 ### Asset Authorization
 
@@ -142,18 +139,19 @@ Among the above-mentioned:
 The following takes the organization A authorized assets $\alpha$ to the organization B as an example to specifically introduce the process of asset authorization:
 
 1. Get the $pk_B^R$;
-2. Calculate $Z_B^{\alpha}=h(\alpha|pk_B^R)$;
-3. Get ${\psi}_{R_A^{\alpha}}$，the sister path of $R_A^{\alpha}$ in $MT^R$  from the **Shield** contract;
-4. Get the latest $root_R$ of $MT^R$;
-5. Generate zero knowledge proof $\pi$, including constraints:
+2. Generate a random salt ${\sigma}_{AB}$, which will be sent to organization B through the encrypted channel;
+3. Calculate $Z_B^{\alpha}=h(\alpha|pk_A^R|pk_B^R|{\sigma}_{AB})$;
+4. Get ${\psi}_{R_A^{\alpha}}$，the sister path of $R_A^{\alpha}$ in $MT^R$  from the **Shield** contract;
+5. Get the latest $root_R$ of $MT^R$;
+6. Generate zero knowledge proof $\pi$, including constraints:
 
-   * $pk_A^R=h(sk_A^R)$
-   * $R_A^{\alpha}=h(\alpha|pk_A^R)$ 
-   * $root_R=M({\psi}_{R_A^{\alpha}},R_A^{\alpha})$
-   * $Z_B^{\alpha}=h(\alpha|pk_B^R)$;
-6. public inputs: $[Z_B^{\alpha},root_R];$
-7. private inputs: $[pk_B^R,sk_A^R,\alpha,{\psi}_{R_A^{\alpha}}]$;
-8. Call the method of smart contract: $Shield.authorize(\pi,Z_B^{\alpha},root_R)$.
+   * $pk_A^R:=h(sk_A^R)$
+   * $R_A^{\alpha}:=h(\alpha|pk_A^R|{\sigma}_A)$ 
+   * $root_R==M({\psi}_{R_A^{\alpha}},R_A^{\alpha})$
+   * $Z_B^{\alpha}==h(\alpha|pk_A^R|pk_B^R|{\sigma}_{AB})$;
+7. public inputs: $[Z_B^{\alpha},root_R];$
+8. private inputs: $[pk_B^R,sk_A^R,\alpha,{\psi}_{R_A^{\alpha}},{\sigma}_A,{\sigma}_{AB}]$;
+9. Call the method of smart contract: $Shield.authorize(\pi,Z_B^{\alpha},root_R)$.
 
 ### Proof of Authorization
 
@@ -164,27 +162,24 @@ In order to show a third party that they have obtained authorization for a digit
 
 The following takes the organization B and the asset $\alpha$ as an example, and specifically describes the process of generating the proof of authorization:
 
-1. Get $pk_A^R$，and calculate $R_A^{\alpha}=h(\alpha|pk_A^R)$;
-2. Calculate $Z_B^{\alpha}=h(\alpha|pk_B^R)$;
-3. Get ${\psi}_{R_A^{\alpha}}$，the sister path of $R_A^{\alpha}$ in $MT^R$ from the **Shield** contract;
-4. Get ${\psi}_{Z_B^{\alpha}}$，the sister path of $Z_B^{\alpha}$ in $MT^Z$ from the **Shield** contract;
-5. Get the latest $root_Z$ of $MT^Z;$
-6. Get the latest $root_R$ of $MT^R$;
-7. Generate zero knowledge proof $\pi$, including constraints:
-   * $pk_B^R=h(sk_B^R)$
-   * $Z_B^{\alpha}=h(\alpha|pk_B^R)$
+1. Get $pk_A^R$ and ${\sigma}_{AB}$
+2. Calculate $Z_B^{\alpha}=h(\alpha|pk_A^R|pk_B^R|{\sigma}_{AB})$;
+3. Get ${\psi}_{Z_B^{\alpha}}$，the sister path of $Z_B^{\alpha}$ in $MT^Z$ from the **Shield** contract;
+4. Get the latest $root_Z$ of $MT^Z$;
+5. Generate zero knowledge proof $\pi$, including constraints:
+   * $pk_B^R==h(sk_B^R)$
+   * $Z_B^{\alpha}=h(\alpha|pk_A^R|pk_B^R|{\sigma}_{AB})$
    * $root_Z==M({\psi}_{Z_B^{\alpha}},Z_B^{\alpha})$
-   * $root_R==M({\psi}_{R_A^{\alpha}},R_A^{\alpha})$
-8. public inputs: $[pk_A^R,pk_B^R,\alpha,root_Z,root_R]$;
-9. private inputs: $[sk_B^R,{\psi}_{R_A^{\alpha}},{\psi}_{Z_B^{\alpha}}]$;
+6. public inputs: $[pk_A^R,pk_B^R,\alpha,root_Z]$;
+7. private inputs: $[sk_B^R,{\psi}_{Z_B^{\alpha}},{\sigma}_{AB}]$;
 
-10. $[\pi,pk_A^R, pk_B^R,\alpha]$ is open to everyone, representing  a proof that B has the  authorization of asset $\alpha$ from A.
+8. $[\pi,pk_A^R, pk_B^R,\alpha,root_Z]$ is open to everyone, representing  a proof that B has the  authorization of asset $\alpha$ from A.
 
 ### Verification of Authorization
 
 For the proof of authorization provided by other organizations, the validity of the authorization certificate can be verified by calling the smart contract method:
 
-$Shield.approveCheck(\pi,pk_A^R, pk_B^R,\alpha)$
+$Shield.approveCheck(\pi,pk_A^R, pk_B^R,\alpha,root_Z)$
 
 which returns：
 
@@ -223,7 +218,7 @@ The following sections detail some of the important contracts:
   * The contract needs to verify that the root was or are the root of $MT^R$.
 * $verify(\pi, inputs):$
   * Verify that an evidence $\pi$ matches the corresponding inputs by calling the Verifier contract method.
-* $authorizeCheck(\pi,pk_A^R, pk_B^R,\alpha)$
+* $authorizeCheck(\pi,pk_A^R, pk_B^R,\alpha,root_Z)$
   * Verify the authorization information.
 
 ## Reference

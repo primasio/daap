@@ -1,0 +1,68 @@
+import "hashes/sha256/512bit.code" as sha256of512
+import "hashes/sha256/512bitPadded.code" as sha256of512Padded
+import "hashes/sha256/256bitPadded.code" as sha256of256Padded
+import "utils/pack/unpack128.code" as unpack128
+import "utils/pack/nonStrictUnpack256.code" as unpack256
+
+def unpack128X128(field high, field low)->(field[256]):
+    field[128] highBits = unpack128(high)
+    field[128] lowBits = unpack128(low)
+    return [...highBits, ...lowBits]
+
+def orderedConcatenate216x216(field order, field[216] a, field[216] b)->(field[432]):
+	field[216] left = if order == 0 then b else a fi
+	field[216] right = if order == 0 then a else b fi
+	return [...left, ...right]
+
+def shaPad432To512(field[432] a)->(field[512]):
+	return [...a, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,1,0,1,1,0,0,0,0]
+
+// unpacks the bits in a path field ready for sha-ing
+def unpackPath(field p)->(field[216]):
+	field[256] sister = unpack256(p)
+	return sister[40..256]
+
+// Inputs for main are:
+// assetId - unique id of asset
+// publicKeyB - public key of Bob
+// secretKeyA - secret key of Alice
+// path - the path from the registry commitment to the root of the merkle tree
+// authCommitment - the authority commitment
+// root - the merkle root
+// saltA - the salt for asset registry
+// saltAB  - the salt for asset authority
+
+def main(field authCommitmentHigh, field authCommitmentLow, field rootHigh, field rootLow, private field[32] path, private field order, private field secretKeyAHigh, private field secretKeyALow, private field publicKeyBHigh, private field publicKeyBLow, private field assetIdHigh, private field assetIdLow, private field saltAHigh, private field saltALow, private field saltABHigh, private field saltABLow)->():
+
+    field[256] authCommitmentBits = unpack128X128(authCommitmentHigh, authCommitmentLow)
+    field[256] rootBits = unpack128X128(rootHigh, rootLow)
+    field[256] secretKeyABits = unpack128X128(secretKeyAHigh, secretKeyALow)
+    field[256] publicKeyBBits = unpack128X128(publicKeyBHigh, publicKeyBLow)
+    field[256] assetIdBits = unpack128X128(assetIdHigh, assetIdLow)
+    field[128] orderBits = unpack128(order)
+    field[256] saltABits = unpack128X128(saltAHigh, saltALow)
+    field[256] saltABBits = unpack128X128(saltABHigh, saltABLow)
+
+    // Calculation of publicKeyA from H(secretKeyA)
+    field[256] publicKeyABits = sha256of256Padded(secretKeyABits)
+
+    // And calculation of the asset registry commitment
+    field[256] hash = sha256of512Padded(assetIdBits, publicKeyABits)
+    hash = sha256of512Padded(hash, saltABits)
+
+    // concatenate siblings and hash all the way up to the root:
+    for field i in 0..32 do
+        field j = 31-i
+        preimage512 = shaPad432To512(orderedConcatenate216x216(orderBits[j], hash[40..256], unpackPath(path[j])))
+        hash = sha256of512(preimage512[0..256], preimage512[256..512])
+    endfor
+
+    field[256] authCommitmentBitsCheck = sha256of512Padded(assetIdBits, publicKeyBBits)
+    authCommitmentBitsCheck = sha256of512Padded(authCommitmentBitsCheck, publicKeyABits)
+    authCommitmentBitsCheck = sha256of512Padded(authCommitmentBitsCheck, saltABBits)
+
+    //check proofs
+    rootBits == hash
+    authCommitmentBits == authCommitmentBitsCheck
+
+    return

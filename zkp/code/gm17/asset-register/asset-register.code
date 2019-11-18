@@ -1,0 +1,30 @@
+import "hashes/sha256/256bitPadded.code" as sha256of256
+import "hashes/sha256/512bitPadded.code" as sha256of512
+import "utils/pack/unpack128.code" as unpack128
+
+def unpack128X128(field high, field low)->(field[256]):
+    field[128] highBits = unpack128(high)
+    field[128] lowBits = unpack128(low)
+    return [...highBits, ...lowBits]
+
+// Inputs for main are:
+// - commitment is the asset registry commitment
+// - assetId is the unique id for asset
+// - secretKey (private) is the secret key of organization
+// - salt (private) is a random number
+def main(field commitmentHigh, field commitmentLow, field assetIdHigh, field assetIdLow, private field secretKeyHigh, private field secretKeyLow, private field saltHigh, private field saltLow)->():
+
+	field[256] commitmentBits = unpack128X128(commitmentHigh, commitmentLow)
+    field[256] assetIdBits = unpack128X128(assetIdHigh, assetIdLow)
+    field[256] secretKeyBits = unpack128X128(secretKeyHigh, secretKeyLow)
+    field[256] saltBits = unpack128X128(saltHigh, saltLow)
+
+	// Compute publicKey = H(secretKey):
+	field[256] publicKeyBits = sha256of256(secretKeyBits)
+
+	// Compute register commitment = H(assetId|publicKey)
+	field[256] commitmentBitsCheck = sha256of512(assetIdBits, publicKeyBits)
+	commitmentBitsCheck = sha256of512(commitmentBitsCheck, saltBits)
+	commitmentBitsCheck == commitmentBits
+
+	return

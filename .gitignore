@@ -4,7 +4,7 @@ zkp/code/gm17/*/**
 !**/*.pcode
 !**/*.code
 **/out.code
-compile
+compile/*
 zkp/src/vkIds.json
 out.*
 out

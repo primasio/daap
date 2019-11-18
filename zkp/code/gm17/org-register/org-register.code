@@ -1,0 +1,23 @@
+import "hashes/sha256/256bitPadded.code" as sha256of256
+import "utils/pack/unpack128.code" as unpack128
+
+// Inputs for main are:
+// - secretKey (private) is the secret key of organization
+// - publicKey (public) is the public key of organization derived by hashing the secretKey of organization
+
+def main(field publicKeyHigh, field publicKeyLow, private field secretKeyHigh, private field secretKeyLow)->():
+
+	field[128] publicKeyHighBits = unpack128(publicKeyHigh)
+	field[128] publicKeyLowBits = unpack128(publicKeyLow)
+	field[256] publicKeyBits = [...publicKeyHighBits, ...publicKeyLowBits]
+
+	field[128] secretKeyHighBits = unpack128(secretKeyHigh)
+	field[128] secretKeyLowBits = unpack128(secretKeyLow)
+	field[256] secretKeyBits = [...secretKeyHighBits, ...secretKeyLowBits]
+
+	// Compute publicKey = H(secretKey):
+	field[256] publicKeyBitsCheck = sha256of256(secretKeyBits)
+
+	publicKeyBits == publicKeyBitsCheck
+
+	return

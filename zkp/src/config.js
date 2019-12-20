@@ -38,6 +38,7 @@ module.exports = {
     ORG_REG_DIR: 'gm17/org-register/',
     ASSET_REG_DIR: 'gm17/asset-register/',
     ASSET_AUTH_DIR: 'gm17/asset-auth/',
+    AUTH_PROOF_DIR: 'gm17/auth-proof/',
 
     AGREE_CONTRACT_DIR: '/code/gm17/agree-contract/',
 

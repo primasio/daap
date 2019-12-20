@@ -10,6 +10,15 @@ const path = require('path');
 const Contract = require('../../web3/contract');
 const Element = require('./Element');
 let container;
+const verifier = new Contract('GM17_v0');
+const verifier_registry = new Contract('Verifier_Registry');
+const organization = new Contract('Organization');
+const shield = new Contract('Shield');
+console.log('Shield 合约地址：', shield.address);
+console.log('Organization 合约地址：', organization.address);
+console.log('Verifier 合约地址：', verifier.address);
+console.log('Verifier_Registry 合约地址：', verifier_registry.address);
+
 
 async function getVkIds() {
     let vkIds = {};
@@ -58,15 +67,7 @@ function parseProof(proof) {
 }
 
 async function orgRegister(pk_A, sk_A, vkId, name, addr, account) {
-    console.group('\n正在 注册组织...');
-    const verifier = new Contract('GM17_v0');
-    const verifier_registry = new Contract('Verifier_Registry');
-    const organization = new Contract('Organization');
-    console.log('Organization 合约地址：', organization.address);
-    console.log('Verifier 合约地址：', verifier.address);
-    console.log('Verifier_Registry 合约地址：', verifier_registry.address);
-    console.groupEnd();
-
+    console.log('\n正在 注册组织...');
     console.group('已知的 Proof 变量：');
     const p = config.ZOKRATES_PACKING_SIZE; // packing size in bits
     const pt = Math.ceil((config.INPUTS_HASHLENGTH * 8) / config.ZOKRATES_PACKING_SIZE); // packets in bits
@@ -92,10 +93,6 @@ async function orgRegister(pk_A, sk_A, vkId, name, addr, account) {
     proof = parseProof(proof);
     await zkp.orgRegister(proof, inputs, vkId, name, addr, account, organization);
 
-    // CHECK!!!!
-    const registry = await verifier.call('getRegistry');
-    console.log('检查verifier是否已经注册:', registry);
-
     console.log('组织注册完成！\n');
     console.groupEnd();
 }
@@ -110,14 +107,7 @@ async function OrgRegister(name) {
 }
 
 async function assetRegister(sk_A, S_A, assetId, vkId, account) {
-    console.group('\n正在注册资产...');
-    const verifier = new Contract('GM17_v0');
-    const verifier_registry = new Contract('Verifier_Registry');
-    const shield = new Contract('Shield');
-    console.log('Shield 合约地址：', shield.address);
-    console.log('Verifier 合约地址：', verifier.address);
-    console.log('Verifier_Registry 合约地址：', verifier_registry.address);
-    console.groupEnd();
+    console.log('\n正在注册资产...');
 
     let R_A = utils.concatenateThenHash(assetId, utils.hash(sk_A));
     R_A = utils.concatenateThenHash(R_A, S_A);
@@ -156,10 +146,6 @@ async function assetRegister(sk_A, S_A, assetId, vkId, account) {
     proof = parseProof(proof);
     await zkp.assetRegister(proof, inputs, vkId, account, shield);
 
-    // CHECK!!!!
-    const registry = await verifier.call('getRegistry');
-    console.log('检查verifier是否已经注册:', registry);
-
     console.log('资产注册完成！\n');
     console.groupEnd();
     return [assetId, R_A, S_A]
@@ -175,14 +161,7 @@ async function AssetRegister() {
 }
 
 async function assetAuth(pk_B, sk_A, S_A, S_AB, assetId, R_A, vkId, account) {
-    console.group('\n正在进行资产授权...');
-    const verifier = new Contract('GM17_v0');
-    const verifier_registry = new Contract('Verifier_Registry');
-    const shield = new Contract('Shield');
-    console.log('Shield 合约地址：', shield.address);
-    console.log('Verifier 合约地址：', verifier.address);
-    console.log('Verifier_Registry 合约地址：', verifier_registry.address);
-    console.groupEnd();
+    console.log('\n正在进行资产授权...');
 
     const root = await shield.call('regLatestRoot'); // solidity getter for the public variable latestRoot
     console.log(`Registry Merkle Root: ${root}`);
@@ -191,11 +170,11 @@ async function assetAuth(pk_B, sk_A, S_A, S_AB, assetId, R_A, vkId, account) {
     Z_B = utils.concatenateThenHash(Z_B, utils.hash(sk_A));
     Z_B = utils.concatenateThenHash(Z_B, S_AB);
     let R_A_index = await shield.call('regCommitmentIndex', [R_A]);
-    if (R_A_index === 0) {
+    if (R_A_index <= 0) {
         throw new Error('不存在的commitment')
     }
     R_A_index--;
-    // we need the Merkle path from the token commitment to the root, expressed as Elements
+    // we need the Merkle path from the registry commitment to the root, expressed as Elements
     const path = await cv.computePath(account, shield, R_A, R_A_index, 0).then(result => {
         return {
             elements: result.path.map(
@@ -213,8 +192,9 @@ async function assetAuth(pk_B, sk_A, S_A, S_AB, assetId, R_A, vkId, account) {
     console.group('已知的 Proof 变量：');
     const p = config.ZOKRATES_PACKING_SIZE; // packing size in bits
     const pt = Math.ceil((config.INPUTS_HASHLENGTH * 8) / config.ZOKRATES_PACKING_SIZE); // packets in bits
-    console.log('pk_B:', pk_B, ' : ', utils.hexToFieldPreserve(sk_A, p, pt));
+    console.log('pk_B:', pk_B, ' : ', utils.hexToFieldPreserve(pk_B, p, pt));
     console.log('sk_A:', sk_A, ' : ', utils.hexToFieldPreserve(sk_A, p, pt));
+    console.log('S_AB:', S_AB, ' : ', utils.hexToFieldPreserve(S_AB, p, pt));
     console.log('assetId:', assetId, ' : ', utils.hexToFieldPreserve(assetId, p, pt));
     console.groupEnd();
 
@@ -230,7 +210,7 @@ async function assetAuth(pk_B, sk_A, S_A, S_AB, assetId, R_A, vkId, account) {
     const hostDir = config.ASSET_AUTH_DIR;
 
     // compute the proof
-    console.group('计算proof：w=[pk_B, sk_A, assetId, path] x=[Z_B, root]');
+    console.group('计算proof：w=[pk_B, sk_A, assetId, path, S_A, S_AB] x=[Z_B, root]');
     let proof = await computeProof(
         [
             new Element(Z_B, 'field', p, pt),
@@ -249,12 +229,9 @@ async function assetAuth(pk_B, sk_A, S_A, S_AB, assetId, R_A, vkId, account) {
     proof = parseProof(proof);
     await zkp.assetAuth(proof, inputs, vkId, account, shield);
 
-    // CHECK!!!!
-    const registry = await verifier.call('getRegistry');
-    console.log('检查verifier是否已经注册:', registry);
-
     console.log('资产授权完成！\n');
     console.groupEnd();
+    return S_AB
 }
 
 async function AssetAuth(assetId, S_A, R_A) {
@@ -263,16 +240,103 @@ async function AssetAuth(assetId, S_A, R_A) {
     let pk_B = config.PK_B;
     let S_AB = await utils.rndHex(32);
     let account = conf.accounts[0].address;
-    await assetAuth(pk_B, sk_A, S_A, S_AB, assetId, R_A, vkIds['asset-auth'].vkId, account)
+    return await assetAuth(pk_B, sk_A, S_A, S_AB, assetId, R_A, vkIds['asset-auth'].vkId, account)
+}
+
+async function authProof(pk_A, pk_B, assetId, sk_B, S_AB, vkId, account) {
+    console.log('\n正在生成授权证明...');
+    const root = await shield.call('authLatestRoot'); // solidity getter for the public variable latestRoot
+    console.log(`Registry Merkle Root: ${root}`);
+
+    let Z_B = utils.concatenateThenHash(assetId, pk_B);
+    Z_B = utils.concatenateThenHash(Z_B, pk_A);
+    Z_B = utils.concatenateThenHash(Z_B, S_AB);
+
+    let Z_B_index = await shield.call('authCommitmentIndex', [Z_B]);
+    if (Z_B_index <= 0) {
+        throw new Error('不存在的commitment')
+    }
+    Z_B_index--;
+    // we need the Merkle path from the auth commitment to the root, expressed as Elements
+    const path = await cv.computePath(account, shield, Z_B, Z_B_index, 1).then(result => {
+        return {
+            elements: result.path.map(
+                element => new Element(element, 'field', config.MERKLE_HASHLENGTH * 8, 1),
+            ),
+            positions: new Element(result.positions, 'field', 128, 1),
+        };
+    });
+    // check the path and root match:
+    if (path.elements[0].hex !== root) {
+        throw new Error(`默克尔树Root不相等: sister-path[0]=${path.elements[0].hex} root=${root}`);
+    }
+
+    console.group('已知的 Proof 变量：');
+    const p = config.ZOKRATES_PACKING_SIZE; // packing size in bits
+    const pt = Math.ceil((config.INPUTS_HASHLENGTH * 8) / config.ZOKRATES_PACKING_SIZE); // packets in bits
+    console.log('pk_A:', pk_A, ' : ', utils.hexToFieldPreserve(pk_A, p, pt));
+    console.log('pk_B:', pk_B, ' : ', utils.hexToFieldPreserve(pk_B, p, pt));
+    console.log('sk_B:', sk_B, ' : ', utils.hexToFieldPreserve(sk_B, p, pt));
+    console.log('S_AB:', S_AB, ' : ', utils.hexToFieldPreserve(S_AB, p, pt));
+    console.log('assetId:', assetId, ' : ', utils.hexToFieldPreserve(assetId, p, pt));
+    console.groupEnd();
+
+    console.group('新的Proof变量:');
+    console.log('Z_B: ', Z_B, ' : ', utils.hexToFieldPreserve(Z_B, p, pt));
+    console.groupEnd();
+
+    const inputs = cv.computeVectors([
+        new Element(assetId, 'field', p, pt),
+        new Element(pk_A, 'field', p, pt),
+        new Element(pk_B, 'field', p, pt),
+        new Element(root, 'field', p, pt)
+    ]);
+    console.log('公开inputs:\n', inputs);
+
+    const hostDir = config.AUTH_PROOF_DIR;
+
+    // compute the proof
+    console.group('计算proof：w=[sk_B, path,S_AB] x=[pk_A, pk_B, assetId, root]');
+    let proof = await computeProof(
+        [
+            new Element(assetId, 'field', p, pt),
+            new Element(pk_A, 'field', p, pt),
+            new Element(pk_B, 'field', p, pt),
+            new Element(root, 'field', p, pt),
+            ...path.elements.slice(1),
+            path.positions,
+            new Element(sk_B, 'field', p, pt),
+            new Element(S_AB, 'field', p, pt),
+        ],
+        hostDir,
+    );
+
+    proof = parseProof(proof);
+    await zkp.authProof(proof, inputs, vkId, account, shield);
+}
+
+async function AuthProof(assetId, S_AB) {
+    let vkIds = await getVkIds();
+    let pk_A = config.PK_A;
+    let pk_B = config.PK_B;
+    let sk_B = config.SK_B;
+    let account = conf.accounts[0].address;
+    let vkId = vkIds['auth-proof'].vkId;
+    return await authProof(pk_A, pk_B, assetId, sk_B, S_AB, vkId, account)
 }
 
 async function runController() {
+    const registry = await verifier.call('getRegistry');
+    console.log('检查verifier是否已经注册:', registry);
+
     await OrgRegister('原本');
     console.log('成功执行组织注册！');
     let [assetId, R_A, S_A] = await AssetRegister();
     console.log('成功执行资产注册！');
-    await AssetAuth(assetId, S_A, R_A);
-    console.log('成功执行资产授权！');
+    let S_AB = await AssetAuth(assetId, S_A, R_A);
+    console.log('成功执行资产授权！', S_AB, assetId);
+    await AuthProof(assetId, S_AB);
+    console.log('成功执行授权验证！');
 }
 
 runController().then(() => {

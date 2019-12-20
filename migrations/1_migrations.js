@@ -13,9 +13,10 @@ async function deployContracts() {
     await BN256G2.deploy([], gasConfig);
     GM17_v0.link(BN256G2);
     await GM17_v0.deploy([Verifier_Registry.address], gasConfig);
+    await Organization.deploy([Verifier_Registry.address, GM17_v0.address], gasConfig);
     await NFTokenMetadata.deploy([], gasConfig);
-    await Shield.deploy([Verifier_Registry.address, GM17_v0.address, NFTokenMetadata.address], gasConfig);
-    await Organization.deploy([Verifier_Registry.address, GM17_v0.address], gasConfig)
+    await Shield.deploy([Verifier_Registry.address, GM17_v0.address, NFTokenMetadata.address, Organization.address], gasConfig);
+
 }
 
 deployContracts().then(() => {

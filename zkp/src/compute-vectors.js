@@ -50,24 +50,24 @@ function computeVectors(elements) {
  It works for any size of Merkle tree, it just needs to know the tree depth, which it gets from config.js
  @param {string} account - the account that is paying for these tranactions
  @param {Contract} shieldContract - an instance of the shield contract that holds the tokens to be joined
- @param {string} _myToken - the set of n tokens/committments (those not yet used will be 0) returned
+ @param {string} _myCommit - the set of n tokens/committments (those not yet used will be 0) returned
  from TokenShield.sol
- @param {number} myTokenIndex - the index within the shield contract of the merkle tree of the token we're calculating the witness for
+ @param {number} _myCommitIndex - the index within the shield contract of the merkle tree of the token we're calculating the witness for
  @param {number} treeType - 0 for registry tree and 1 for authority tree
  @returns {object} containging: an array of strings - where each element of the array is a node of the sister-path of
  the path from myToken to the Merkle Root and whether the sister node is to the left or the right (this is needed because the order of hashing matters)
  */
-async function computePath(account, shieldContract, _myToken, myTokenIndex, treeType) {
+async function computePath(account, shieldContract, _myCommit, _myCommitIndex, treeType) {
     console.group('在本地机器上计算默克尔树路径...');
-    const myToken = utils.strip0x(_myToken);
-    console.log('myToken', myToken);
-    if (myToken.length !== config.INPUTS_HASHLENGTH * 2) {
-        throw new Error(`tokens have incorrect length: ${myToken}`);
+    const myCommit = utils.strip0x(_myCommit);
+    console.log('myCommit', myCommit);
+    if (myCommit.length !== config.INPUTS_HASHLENGTH * 2) {
+        throw new Error(`tokens have incorrect length: ${myCommit}`);
     }
-    const myTokenTruncated = myToken.slice(-config.MERKLE_HASHLENGTH * 2);
-    console.log('myTokenTruncated', myTokenTruncated);
-    console.log(`myTokenIndex: ${myTokenIndex}`);
-    const leafIndex = utils.getLeafIndexFromZCount(myTokenIndex);
+    const myTokenTruncated = myCommit.slice(-config.MERKLE_HASHLENGTH * 2);
+    console.log('myCommitTruncated', myTokenTruncated);
+    console.log(`myCommitIndex: ${_myCommitIndex}`);
+    const leafIndex = utils.getLeafIndexFromZCount(_myCommitIndex);
     console.log('leafIndex', leafIndex);
 
     // define Merkle Constants:
@@ -78,11 +78,11 @@ async function computePath(account, shieldContract, _myToken, myTokenIndex, tree
     leaf = utils.strip0x(leaf);
     if (leaf === myTokenTruncated) {
         console.log(
-            `在链上默克尔树中找到一个匹配的 token commitment：${leaf} ， 下标索引为：${leafIndex}`,
+            `在链上默克尔树中找到一个匹配的 commitment：${leaf} ， 下标索引为：${leafIndex}`,
         );
     } else {
         throw new Error(
-            `,在链上默克尔树的第${leafIndex}个叶节点查找token commitment ${myToken}(截取为${myTokenTruncated})失败！ 目标位置实际找到的是 ${leaf}`,
+            `在链上默克尔树的第${leafIndex}个叶节点查找 commitment ${myCommit}(截取为${myTokenTruncated})失败！ 目标位置实际找到的是 ${leaf}`,
         );
     }
 

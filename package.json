@@ -4,7 +4,7 @@
   "description": "Digital Asset Authorize Protocol",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "node migrations/1_migrations.js",
+    "deploy": "node migrations/deploy_ropsten.js",
     "setVk": "node zkp/src/vk-controller.js",
     "daap": "node zkp/src/daap-controller.js"
   },
@@ -13,17 +13,17 @@
   "homepage": "https://www.yuanben.io/",
   "repository": "https://github.com/primasio/daap",
   "dependencies": {
-    "web3": "1.2.1",
-    "solc": "^0.5.11",
-    "jsonfile": "^5.0.0",
-    "fs": "^0.0.1-security",
-    "path": "^0.12.7",
-    "ethereumjs-tx": "^2.1.1",
-    "secp256k1": "^3.7.1",
-    "safe-buffer": "^5.2.0",
-    "hex-to-binary": "^1.0.1",
     "big-integer": "^1.6.47",
-    "node-docker-api": "^1.1.22"
+    "ethereumjs-tx": "^2.1.2",
+    "fs": "^0.0.1-security",
+    "hex-to-binary": "^1.0.1",
+    "jsonfile": "^5.0.0",
+    "node-docker-api": "^1.1.22",
+    "path": "^0.12.7",
+    "safe-buffer": "^5.2.0",
+    "secp256k1": "^3.8.0",
+    "solc": "^0.5.11",
+    "web3": "1.2.1"
   },
   "engines": {
     "node": "12.9.x",

@@ -36,6 +36,9 @@ Contract.prototype = {
     },
     save: async function () {
         let filePath = path.resolve(__dirname, '..', "compile");
+        if (!fs.existsSync(filePath)) {
+            fs.mkdirSync(filePath);
+        }
         let file = path.join(filePath, this.name + '.json');
         let contractData = {};
         contractData.name = this.name;

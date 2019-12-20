@@ -1,11 +1,9 @@
 const fs = require('fs');
-const conf = require('../../web3/config');
 const path = require('path');
-const artifacts = require('../../web3/artifacts');
+const {artifacts, web3} = require('../../web3/artifacts');
 const utils = require('./utils');
 const util = require('util');
 const jsonfile = require('jsonfile');
-const web3 = require('../../web3/eth');
 const vkIdsFile = path.join(path.resolve(__dirname), 'vkIds.json');
 
 let vkIds = {};
@@ -89,7 +87,6 @@ async function loadVk(vkJsonFile, vkDescription) {
 async function vkController() {
     // read existing vkIds (if they exist)
     await getVkIds();
-    const account = conf.accounts[0].address;
     const readdir = util.promisify(fs.readdir);
 
     const filePath = path.resolve(__dirname, '../code/gm17');
@@ -103,7 +100,7 @@ async function vkController() {
                 let jsonFile = path.join(filePath, dir, file);
                 let vkDes = file.slice(0, -8);
                 if (!vkIds.hasOwnProperty(vkDes)) {
-                    await loadVk(jsonFile, vkDes, account);
+                    await loadVk(jsonFile, vkDes);
                 }
                 vkItemList.push(vkDes);
                 console.log(jsonFile, vkDes);

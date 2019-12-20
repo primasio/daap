@@ -5,10 +5,8 @@ const config = require('./config');
 const zkp = require('./daap-zkp');
 const jsonfile = require('jsonfile');
 const fs = require('fs');
-const conf = require('../../web3/config');
 const path = require('path');
-const artifacts = require('../../web3/artifacts');
-const web3 = require('../../web3/eth');
+const {artifacts, web3} = require('../../web3/artifacts');
 const Element = require('./Element');
 let container;
 

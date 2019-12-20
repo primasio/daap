@@ -1,5 +1,6 @@
 const utils = require('./utils');
 const config = require('./config');
+const web3 = require('../../web3/eth');
 
 function logParameters(proof, inputs, vkId, des) {
     console.group(des);
@@ -56,8 +57,23 @@ async function assetAuth(proof, inputs, vkId, account, shield) {
     console.groupEnd();
 }
 
+async function authProof(proof, inputs, vkId, account, shield) {
+    logParameters(proof, inputs, vkId, '在Shield合约中进行授权证明操作');
+
+    const accountWith0x = utils.ensure0x(account);
+    await shield.method('proof', [proof, inputs, vkId], {
+        from: accountWith0x,
+        gas: 6500000,
+        gasPrice: config.GASPRICE,
+    });
+    const log = shield.decodeEvent('Proof');
+    console.log('授权证明成功！', log);
+    console.groupEnd();
+}
+
 module.exports = {
     orgRegister,
     assetRegister,
-    assetAuth
+    assetAuth,
+    authProof
 };

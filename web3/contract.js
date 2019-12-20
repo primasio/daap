@@ -37,8 +37,15 @@ Contract.prototype = {
     save: async function () {
         let filePath = path.resolve(__dirname, '..', "compile");
         let file = path.join(filePath, this.name + '.json');
+        let contractData = {};
+        contractData.name = this.name;
+        contractData.source = this.source ;
+        contractData.abi = this.abi;
+        contractData.byteCode = this.byteCode;
+        contractData.address = this.address;
+        contractData.txHash = this.txHash;
         try {
-            await jsonfile.writeFile(file, this)
+            await jsonfile.writeFile(file, contractData)
         } catch (err) {
             console.log(this.name + '保存失败：', err)
         }

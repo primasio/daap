@@ -24,7 +24,7 @@ async function getVkIds() {
     }
 }
 
-async function setVkIds() {
+async function setVkIds(vkItemList) {
     const gasConfig = {
         gasPrice: 10000000000,
         gasLimit: 6500000
@@ -32,34 +32,24 @@ async function setVkIds() {
     const organization = new Contract('Organization');
     const shield = new Contract('Shield');
     await getVkIds();
-    if (vkIds.hasOwnProperty('org-register')) {
-        await organization.method('setVkIds', [vkIds['org-register'].vkId], gasConfig);
-        const log = organization.decodeEvent('VkIdsChanged');
-        if (log !== null) {
-            console.log('Organization org-register VkIdsChanged', log)
+    for (let vkItem of vkItemList) {
+        if (vkIds.hasOwnProperty(vkItem)) {
+            if (vkItem.startsWith('org')) {
+                await organization.method('setVkIds', [vkIds[vkItem].vkId], gasConfig);
+                const log = organization.decodeEvent('VkIdsChanged');
+                if (log !== null) {
+                    console.log('Organization: ' + vkItem + ' VkIdsChanged', log)
+                }
+            } else {
+                await shield.method('setVkIds', [vkIds[vkItem].vkId], gasConfig);
+                const log = shield.decodeEvent('VkIdsChanged');
+                if (log !== null) {
+                    console.log('Shield: ' + vkItem + ' VkIdsChanged', log)
+                }
+            }
+        } else {
+            console.log('vkIds:' + vkItem + ' 数据不完整')
         }
-    } else {
-        console.log('vkIds 数据不完整')
-    }
-
-    if (vkIds.hasOwnProperty('asset-register')) {
-        await shield.method('setVkIds', [vkIds['asset-register'].vkId], gasConfig);
-        const log = shield.decodeEvent('VkIdsChanged');
-        if (log !== null) {
-            console.log('Shield asset-register VkIdsChanged', log)
-        }
-    } else {
-        console.log('vkIds 数据不完整')
-    }
-
-    if (vkIds.hasOwnProperty('asset-auth')) {
-        await shield.method('setVkIds', [vkIds['asset-auth'].vkId], gasConfig);
-        const log = shield.decodeEvent('VkIdsChanged');
-        if (log !== null) {
-            console.log('Shield asset-auth VkIdsChanged', log)
-        }
-    } else {
-        console.log('vkIds 数据不完整')
     }
 }
 
@@ -119,6 +109,7 @@ async function vkController() {
 
     const filePath = path.resolve(__dirname, '../code/gm17');
     let codeDirList = await readdir(filePath);
+    let vkItemList = [];
     for (let dir of codeDirList) {
         let codeDir = path.join(filePath, dir);
         let fileList = await readdir(codeDir);
@@ -129,11 +120,12 @@ async function vkController() {
                 if (!vkIds.hasOwnProperty(vkDes)) {
                     await loadVk(jsonFile, vkDes, account);
                 }
+                vkItemList.push(vkDes);
                 console.log(jsonFile, vkDes);
             }
         }
     }
-    await setVkIds();
+    await setVkIds(vkItemList);
     console.log('VK setup 完成');
 }
 

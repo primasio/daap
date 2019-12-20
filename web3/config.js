@@ -14,5 +14,5 @@ module.exports = {
         chain: 'ropsten', hardfork: 'petersburg'
     },
     gasPrice: 10000000000,
-    gasLimit: 8000000,
+    gasLimit: 7000000,
 };

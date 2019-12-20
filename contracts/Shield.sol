@@ -5,9 +5,10 @@ Contract to enable the management of hidden non fungible toke transactions.
 pragma solidity ^0.5.11;
 
 import "./Ownable.sol";
-import "./Verifier_Registry.sol"; //we import the implementation to have visibility of its 'getters'
+import "./Verifier_Registry.sol";
 import "./Verifier_Interface.sol";
 import "./NFTokenInterface.sol";
+import "./OrganizationInterface.sol";
 
 
 contract Shield is Ownable {
@@ -47,6 +48,7 @@ contract Shield is Ownable {
     event VkIdsChanged(bytes32 vkId);
     event Register(bytes32 regCommitment, bytes32 assetId, uint256 commitment_index);
     event Auth(bytes32 authCommitment, uint256 commitment_index);
+    event Proof(string owner);
 
     uint constant merkleWidth = 4294967296; //2^32
     uint constant merkleDepth = 33; //33
@@ -68,12 +70,14 @@ contract Shield is Ownable {
     Verifier_Registry public verifierRegistry; //the Verifier Registry contract
     Verifier_Interface public verifier; //the verification smart contract
     NFTokenInterface public nfToken; //the NFToken ERC-721 token contract
+    OrganizationInterface public organization;
 
-    constructor(address _verifierRegistry, address _verifier, address _nfToken) public {
+    constructor(address _verifierRegistry, address _verifier, address _nfToken, address _organization) public {
         _owner = msg.sender;
         verifierRegistry = Verifier_Registry(_verifierRegistry);
         verifier = Verifier_Interface(_verifier);
         nfToken = NFTokenInterface(_nfToken);
+        organization = OrganizationInterface(_organization);
     }
 
     /**
@@ -123,6 +127,7 @@ contract Shield is Ownable {
     }
 
     function register(uint256[] calldata _proof, uint256[] calldata _inputs, bytes32 _vkId) external {
+        require(_inputs.length == 4, "inputs length wrong, expected 4");
         bytes32 regCommitment = (bytes32(_inputs[0]) << 128) | bytes32(_inputs[1]);
         bytes32 assetId = (bytes32(_inputs[2]) << 128) | bytes32(_inputs[3]);
         require(vkIds[_vkId] == _vkId, "Incorrect vkId");
@@ -130,8 +135,10 @@ contract Shield is Ownable {
         bool result = verifier.verify(_proof, _inputs, _vkId);
         require(result, "The proof has not been verified by the contract");
 
-        uint256 leafIndex = merkleWidth - 1 + regLeafCount; // specify the index of the commitment within the merkleTree
-        regMerkleTree[leafIndex] = bytes27(regCommitment<<40); // add the commitment to the merkleTree
+        uint256 leafIndex = merkleWidth - 1 + regLeafCount;
+        // specify the index of the commitment within the merkleTree
+        regMerkleTree[leafIndex] = bytes27(regCommitment << 40);
+        // add the commitment to the merkleTree
 
         assets[assetId] = assetId;
         updatePathToRoot(leafIndex, 0);
@@ -142,6 +149,7 @@ contract Shield is Ownable {
     }
 
     function auth(uint256[] calldata _proof, uint256[] calldata _inputs, bytes32 _vkId) external {
+        require(_inputs.length == 4, "inputs length wrong, expected 4");
         bytes32 authCommitment = (bytes32(_inputs[0]) << 128) | bytes32(_inputs[1]);
         bytes32 root = (bytes32(_inputs[2]) << 128) | bytes32(_inputs[3]);
         require(vkIds[_vkId] == _vkId, "Incorrect vkId");
@@ -150,14 +158,31 @@ contract Shield is Ownable {
         bool result = verifier.verify(_proof, _inputs, _vkId);
         require(result, "The proof has not been verified by the contract");
 
-        uint256 leafIndex = merkleWidth - 1 + authLeafCount; // specify the index of the commitment within the merkleTree
-        authMerkleTree[leafIndex] = bytes27(authCommitment<<40); // add the commitment to the merkleTree
+        uint256 leafIndex = merkleWidth - 1 + authLeafCount;
+        // specify the index of the commitment within the merkleTree
+        authMerkleTree[leafIndex] = bytes27(authCommitment << 40);
+        // add the commitment to the merkleTree
 
         updatePathToRoot(leafIndex, 1);
         authLeafCount++;
         authCommitmentIndex[authCommitment] = authLeafCount;
 
         emit Auth(authCommitment, authLeafCount);
+    }
+
+    function proof(uint256[] calldata _proof, uint256[] calldata _inputs, bytes32 _vkId) external {
+        require(_inputs.length == 8, "inputs length wrong, expected 8");
+        //bytes32 assetId = (bytes32(_inputs[0]) << 128) | bytes32(_inputs[1]);
+        bytes32 pubKeyA = (bytes32(_inputs[2]) << 128) | bytes32(_inputs[3]);
+        //bytes32 pubKeyB = (bytes32(_inputs[4]) << 128) | bytes32(_inputs[5]);
+        bytes32 root = (bytes32(_inputs[6]) << 128) | bytes32(_inputs[7]);
+        require(vkIds[_vkId] == _vkId, "Incorrect vkId");
+        require(authRoots[root] == root, "The input root has never been the root of the Merkle Tree");
+
+        bool result = verifier.verify(_proof, _inputs, _vkId);
+        require(result, "The proof has not been verified by the contract");
+
+        emit Proof(organization.getName(pubKeyA));
     }
 
     /**

@@ -9,7 +9,7 @@ module.exports = {
             privateKey: '7F3E9126EBA062C1C7243085D06CB6484456B9D903DE61AB294888B1CC9D6C03',
         }
     ],
-    web3ProviderURL: 'ws://47.100.215.28:31066',
+    web3ProviderURL: 'http://127.0.0.1:7545',
     ethOpts: {
         chain: 'ropsten', hardfork: 'petersburg'
     },

@@ -35,7 +35,7 @@ npm run setup
 
 # 协议演示
 1. 在本地环境启动Ganache节点
-2. 在项目根目录执行```truffle migrate --reset``，编译并部署项目用到的所有智能合约
+2. 在项目根目录执行```truffle migrate --reset```，编译并部署项目用到的所有智能合约
 3. 注册vkId：```npm run setVk```
 4. 验证匿名授权协议的所有流程：```npm run daap```
 

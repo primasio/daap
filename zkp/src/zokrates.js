@@ -173,10 +173,46 @@ async function generateProof(container, b = config.ZOKRATES_BACKEND, zkpPath) {
     return proof;
 }
 
+async function compile(container, codeFile) {
+    console.log('Compiling code in the container - this can take some minutes...');
+    const exec = await container.exec.create({
+        Cmd: [
+            config.ZOKRATES_APP_FILEPATH_ABS,
+            'compile',
+            '-i',
+            config.ZOKRATES_CONTAINER_CODE_DIRPATH_ABS + codeFile,
+        ],
+        AttachStdout: true,
+        AttachStderr: true,
+    });
+    return promisifyStream(await exec.start(), 'compile'); // return a promisified stream
+}
+
+async function setup(container, b = config.ZOKRATES_BACKEND) {
+    console.log('Setup: computing (pk,vk) := G(C,toxic) - this can take many minutes...');
+
+    const exec = await container.exec.create({
+        Cmd: [config.ZOKRATES_APP_FILEPATH_ABS, 'setup', '--proving-scheme', b],
+        AttachStdout: true,
+        AttachStderr: true,
+    });
+    return promisifyStream(await exec.start(), 'setup'); // return a promisified stream
+}
+async function exportVerifier(container, b = config.ZOKRATES_BACKEND) {
+    const exec = await container.exec.create({
+        Cmd: [config.ZOKRATES_APP_FILEPATH_ABS, 'export-verifier', '--proving-scheme', b],
+        AttachStdout: true,
+        AttachStderr: true,
+    });
+    return promisifyStream(await exec.start(), 'export-verifier'); // return a promisified stream
+}
 module.exports = {
     runContainer,
     runContainerMounted,
     killContainer,
     computeWitness,
-    generateProof
+    generateProof,
+    compile,
+    setup,
+    exportVerifier
 };

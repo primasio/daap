@@ -11,7 +11,6 @@ const Element = require('./Element');
 let container;
 
 const verifier = artifacts('GM17_v0');
-// const verifier_registry = artifacts('Verifier_Registry');
 const organization = artifacts('Organization');
 const shield = artifacts('Shield');
 

@@ -5,19 +5,16 @@ const config = require('./config');
 const zkp = require('./daap-zkp');
 const jsonfile = require('jsonfile');
 const fs = require('fs');
-const conf = require('../../web3/config');
 const path = require('path');
-const Contract = require('../../web3/contract');
+const {artifacts, web3} = require('../../web3/artifacts');
 const Element = require('./Element');
 let container;
-const verifier = new Contract('GM17_v0');
-const verifier_registry = new Contract('Verifier_Registry');
-const organization = new Contract('Organization');
-const shield = new Contract('Shield');
-console.log('Shield 合约地址：', shield.address);
-console.log('Organization 合约地址：', organization.address);
-console.log('Verifier 合约地址：', verifier.address);
-console.log('Verifier_Registry 合约地址：', verifier_registry.address);
+
+const verifier = artifacts('GM17_v0');
+// const verifier_registry = artifacts('Verifier_Registry');
+const organization = artifacts('Organization');
+const shield = artifacts('Shield');
+
 
 
 async function getVkIds() {
@@ -98,17 +95,17 @@ async function orgRegister(pk_A, sk_A, vkId, name, addr, account) {
 }
 
 async function OrgRegister(name) {
+    let accounts = await web3.eth.getAccounts();
     let vkIds = await getVkIds();
     let pk_A = config.PK_A;
     let sk_A = config.SK_A;
-    let account = conf.accounts[0].address;
-    let addr = conf.accounts[1].address;
+    let account = accounts[0];
+    let addr = accounts[1];
     await orgRegister(pk_A, sk_A, vkIds['org-register'].vkId, name, addr, account)
 }
 
 async function assetRegister(sk_A, S_A, assetId, vkId, account) {
     console.log('\n正在注册资产...');
-
     let R_A = utils.concatenateThenHash(assetId, utils.hash(sk_A));
     R_A = utils.concatenateThenHash(R_A, S_A);
 
@@ -156,20 +153,20 @@ async function AssetRegister() {
     let sk_A = config.SK_A;
     let assetId = await utils.rndHex(32);
     let S_A = await utils.rndHex(32);
-    let account = conf.accounts[0].address;
-    return await assetRegister(sk_A, S_A, assetId, vkIds['asset-register'].vkId, account);
+    let accounts = await web3.eth.getAccounts();
+    return await assetRegister(sk_A, S_A, assetId, vkIds['asset-register'].vkId, accounts[0]);
 }
 
 async function assetAuth(pk_B, sk_A, S_A, S_AB, assetId, R_A, vkId, account) {
     console.log('\n正在进行资产授权...');
-
-    const root = await shield.call('regLatestRoot'); // solidity getter for the public variable latestRoot
+    let instance = await shield.deployed();
+    const root = await instance.regLatestRoot(); // solidity getter for the public variable latestRoot
     console.log(`Registry Merkle Root: ${root}`);
 
     let Z_B = utils.concatenateThenHash(assetId, pk_B);
     Z_B = utils.concatenateThenHash(Z_B, utils.hash(sk_A));
     Z_B = utils.concatenateThenHash(Z_B, S_AB);
-    let R_A_index = await shield.call('regCommitmentIndex', [R_A]);
+    let R_A_index = await instance.regCommitmentIndex(R_A);
     if (R_A_index <= 0) {
         throw new Error('不存在的commitment')
     }
@@ -239,20 +236,21 @@ async function AssetAuth(assetId, S_A, R_A) {
     let sk_A = config.SK_A;
     let pk_B = config.PK_B;
     let S_AB = await utils.rndHex(32);
-    let account = conf.accounts[0].address;
-    return await assetAuth(pk_B, sk_A, S_A, S_AB, assetId, R_A, vkIds['asset-auth'].vkId, account)
+    let accounts = await web3.eth.getAccounts();
+    return await assetAuth(pk_B, sk_A, S_A, S_AB, assetId, R_A, vkIds['asset-auth'].vkId, accounts[0])
 }
 
 async function authProof(pk_A, pk_B, assetId, sk_B, S_AB, vkId, account) {
     console.log('\n正在生成授权证明...');
-    const root = await shield.call('authLatestRoot'); // solidity getter for the public variable latestRoot
+    let instance = await shield.deployed();
+    const root = await instance.authLatestRoot(); // solidity getter for the public variable latestRoot
     console.log(`Registry Merkle Root: ${root}`);
 
     let Z_B = utils.concatenateThenHash(assetId, pk_B);
     Z_B = utils.concatenateThenHash(Z_B, pk_A);
     Z_B = utils.concatenateThenHash(Z_B, S_AB);
 
-    let Z_B_index = await shield.call('authCommitmentIndex', [Z_B]);
+    let Z_B_index = await instance.authCommitmentIndex(Z_B);
     if (Z_B_index <= 0) {
         throw new Error('不存在的commitment')
     }
@@ -320,23 +318,29 @@ async function AuthProof(assetId, S_AB) {
     let pk_A = config.PK_A;
     let pk_B = config.PK_B;
     let sk_B = config.SK_B;
-    let account = conf.accounts[0].address;
+    let accounts = await web3.eth.getAccounts();
     let vkId = vkIds['auth-proof'].vkId;
-    return await authProof(pk_A, pk_B, assetId, sk_B, S_AB, vkId, account)
+    return await authProof(pk_A, pk_B, assetId, sk_B, S_AB, vkId, accounts[0])
 }
 
 async function runController() {
-    const registry = await verifier.call('getRegistry');
-    console.log('检查verifier是否已经注册:', registry);
+    try {
+        let instance = await verifier.deployed();
+        const registry = await instance.getRegistry();
+        console.log('检查verifier是否已经注册:', registry);
 
-    await OrgRegister('原本');
-    console.log('成功执行组织注册！');
-    let [assetId, R_A, S_A] = await AssetRegister();
-    console.log('成功执行资产注册！');
-    let S_AB = await AssetAuth(assetId, S_A, R_A);
-    console.log('成功执行资产授权！', S_AB, assetId);
-    await AuthProof(assetId, S_AB);
-    console.log('成功执行授权验证！');
+        await OrgRegister('原本');
+        console.log('成功执行组织注册！');
+        let [assetId, R_A, S_A] = await AssetRegister();
+        console.log('成功执行资产注册！');
+        let S_AB = await AssetAuth(assetId, S_A, R_A);
+        console.log('成功执行资产授权！', S_AB, assetId);
+        await AuthProof(assetId, S_AB);
+        console.log('成功执行授权验证！');
+    } catch (e) {
+        console.log(e);
+        process.exit();
+    }
 }
 
 runController().then(() => {

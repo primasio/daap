@@ -1,7 +1,3 @@
-const utils = require('./utils');
-const config = require('./config');
-const web3 = require('../../web3/eth');
-
 function logParameters(proof, inputs, vkId, des) {
     console.group(des);
     console.log('proof:');
@@ -12,63 +8,55 @@ function logParameters(proof, inputs, vkId, des) {
 }
 
 async function orgRegister(proof, inputs, vkId, name, addr, account, organization) {
-    logParameters(proof, inputs, vkId, '在Organization合约中进行组织注册操作');
-
-    const accountWith0x = utils.ensure0x(account);
-    const addrWith0x = utils.ensure0x(addr);
-    await organization.method('register', [proof, inputs, vkId, name, addrWith0x], {
-        from: accountWith0x,
-        gas: 6500000,
-        gasPrice: config.GASPRICE,
-    });
-    const log = organization.decodeEvent('Register');
-
-    console.log(log.name, '组织注册成功！');
-    console.groupEnd();
+    try {
+        logParameters(proof, inputs, vkId, '在Organization合约中进行组织注册操作');
+        let instance = await organization.deployed();
+        let res = await instance.register(proof, inputs, vkId, name, addr, {from: account});
+        console.log(res.logs[0].args.name, '组织注册成功！');
+        console.groupEnd();
+    } catch (e) {
+        console.log(e);
+        process.exit();
+    }
 }
 
 async function assetRegister(proof, inputs, vkId, account, shield) {
-    logParameters(proof, inputs, vkId, '在Shield合约中进行资产注册操作');
-
-    const accountWith0x = utils.ensure0x(account);
-    await shield.method('register', [proof, inputs, vkId], {
-        from: accountWith0x,
-        gas: 6500000,
-        gasPrice: config.GASPRICE,
-    });
-    const log = shield.decodeEvent('Register');
-
-    console.log('资产注册成功！', log);
-    console.groupEnd();
+    try {
+        logParameters(proof, inputs, vkId, '在Shield合约中进行资产注册操作');
+        let instance = await shield.deployed();
+        let res = await instance.register(proof, inputs, vkId, {from: account});
+        console.log('资产注册成功！', res.logs[0].args);
+        console.groupEnd();
+    } catch (e) {
+        console.log(e);
+        process.exit();
+    }
 }
 
 async function assetAuth(proof, inputs, vkId, account, shield) {
-    logParameters(proof, inputs, vkId, '在Shield合约中进行资产授权操作');
-
-    const accountWith0x = utils.ensure0x(account);
-    await shield.method('auth', [proof, inputs, vkId], {
-        from: accountWith0x,
-        gas: 6500000,
-        gasPrice: config.GASPRICE,
-    });
-    const log = shield.decodeEvent('Auth');
-
-    console.log('资产授权成功！', log);
-    console.groupEnd();
+    try {
+        logParameters(proof, inputs, vkId, '在Shield合约中进行资产授权操作');
+        let instance = await shield.deployed();
+        let res = await instance.auth(proof, inputs, vkId, {from: account});
+        console.log('资产授权成功！', res.logs[0].args);
+        console.groupEnd();
+    } catch (e) {
+        console.log(e);
+        process.exit();
+    }
 }
 
 async function authProof(proof, inputs, vkId, account, shield) {
-    logParameters(proof, inputs, vkId, '在Shield合约中进行授权证明操作');
-
-    const accountWith0x = utils.ensure0x(account);
-    await shield.method('proof', [proof, inputs, vkId], {
-        from: accountWith0x,
-        gas: 6500000,
-        gasPrice: config.GASPRICE,
-    });
-    const log = shield.decodeEvent('Proof');
-    console.log('授权证明成功！', log);
-    console.groupEnd();
+    try {
+        logParameters(proof, inputs, vkId, '在Shield合约中进行授权证明操作');
+        let instance = await shield.deployed();
+        let res = await instance.proof(proof, inputs, vkId, {from: account});
+        console.log('授权证明成功！', res.logs[0].args);
+        console.groupEnd();
+    } catch (e) {
+        console.log(e);
+        process.exit();
+    }
 }
 
 module.exports = {

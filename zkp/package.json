@@ -1,0 +1,9 @@
+{
+  "name": "zkp",
+  "version": "1.0.0",
+  "dependencies": {
+  },
+  "scripts": {
+    "setup": "node src/index.js"
+  }
+}

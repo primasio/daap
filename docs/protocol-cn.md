@@ -32,10 +32,6 @@
 
 在本文的后半部分，我们将对实现上述功能的零知识证明协议进行详细描述。
 
-另外，我们已经在「原本链」上完成了这个协议的开发，并且经过了一段时间的测试。后续我们会将这部分代码整理出来在Github开源。
-
-在目前的协议设计中没有数字资产的所有权转移的功能，因为这部分已经有现成的方案可以参考，比如[Nightfall](https://github.com/EYBlockchain/nightfall)。而我们的协议可以很容易地和这部分方案进行融合。在后续的开源实现中我们将会对这部分设计进行补充。
-
 在我们现有的代码实现中，使用了[ZoKrates](https://github.com/Zokrates/ZoKrates)工具包，具体的零知识证明算法使用了[Groth 16](https://eprint.iacr.org/2016/260.pdf)。由于零知识证明的通用性，具体使用的算法几乎不影响上层的协议设计。因此实现协议时也可以使用[Bellman](https://github.com/zkcrypto/bellman)工具包,或者将算法替换为[Bulletproofs](https://github.com/dalek-cryptography/bulletproofs)或者是[Sonic](https://eprint.iacr.org/2019/099)算法，以实现更好的性能，以及去除对可信初始化的依赖。
 
 ## 变量说明

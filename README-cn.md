@@ -34,24 +34,18 @@
 
 需要注意的是，虽然我们用了图片来举例子，但是这个协议实现的功能可以用在任何类型的数字资产的注册和授权上。
 
-在本文的后半部分，我们将对实现上述功能的零知识证明协议进行详细描述。
-
-另外，我们已经在「原本链」上完成了这个协议的开发，并且经过了一段时间的测试。后续我们会将这部分代码整理出来在Github开源。
-
-在目前的协议设计中没有数字资产的所有权转移的功能，因为这部分已经有现成的方案可以参考，比如[Nightfall](https://github.com/EYBlockchain/nightfall)。而我们的协议可以很容易地和这部分方案进行融合。在后续的开源实现中我们将会对这部分设计进行补充。
-
 在我们现有的代码实现中，使用了[ZoKrates](https://github.com/Zokrates/ZoKrates)工具包，具体的零知识证明算法使用了[Groth 16](https://eprint.iacr.org/2016/260.pdf)。由于零知识证明的通用性，具体使用的算法几乎不影响上层的协议设计。因此实现协议时也可以使用[Bellman](https://github.com/zkcrypto/bellman)工具包,或者将算法替换为[Bulletproofs](https://github.com/dalek-cryptography/bulletproofs)或者是[Sonic](https://eprint.iacr.org/2019/099)算法，以实现更好的性能，以及去除对可信初始化的依赖。
 
 ## 使用说明
 
-如果你想要自己运行本项目，或者测项目中包含的一些例子。请参考 [使用说明](docs/getting-started-cn.md).
+如果你想要自己运行本项目，或者测试项目中包含的一些例子。请参考 [使用说明](docs/getting-started-cn.md).
 
 ## 协议规范
 
 想要更进一步了解daap协议设计的详情, 请参考 [协议规范](docs/protocol-cn.md)。想要理解协议中零知识证明的应用方式，可以阅读我们的知乎专栏文章
 [零知识证明应用——在区块链上生成可验证的匿名记录](https://zhuanlan.zhihu.com/p/94689517)
 
-## 联系我们
+## 加入社区
 
 Slack: [slack.primas.io](https://slack.primas.io). 请加入 #daap 频道.
 

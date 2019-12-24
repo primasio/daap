@@ -32,12 +32,6 @@ Again, if the buyer wants to prove using the photo was authorized, some text cou
 
 Although above has used a 'photo' as an example, this protocol could be used for any kind of digital asset.
 
-We will explain the protocol in detail in the next chapters.
-
-Currently we have already finished the implementation of this protocol on our own Blockchain platform and have been running tests for quite a while. In the future we intend to open source the code and publish it on Github.
-
-The transfer of ownership is not covered in our protocol since there are already existing solutions for it. Our protocol could be easily integrated into existing solutions and we will provide a fully integrated solution in the open sourced codes.
-
 In our current implementation, [ZoKrates](https://github.com/Zokrates/ZoKrates) is used to develop the protocol, the ZKP algorithm used is [Groth 16](https://eprint.iacr.org/2016/260.pdf). The separation of ZKP algorithm and the upper level design allows the easy switch of ZKP algorithms. One could easily use [Bellman](https://github.com/zkcrypto/bellman) to replace ZoKrates, or using a more advanced algorithm such as [Bulletproofs](https://github.com/dalek-cryptography/bulletproofs) and [Sonic](https://eprint.iacr.org/2019/099) for better performance and the removal of trusted setup.
 
 ## Getting Started

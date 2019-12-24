@@ -180,8 +180,7 @@ $Shield.approveCheck(\pi,pk_A^R, pk_B^R,\alpha,root_Z)$
 which returns：
 
 1. Whether B is authorized by A;
-2. The information of organization  A;
-3. The information of  organization B.
+2. The information of organization A.
 
 ## Smart Contracts
 

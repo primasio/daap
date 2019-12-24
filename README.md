@@ -37,11 +37,11 @@ In our current implementation, [ZoKrates](https://github.com/Zokrates/ZoKrates) 
 ## Getting Started
 
 To start using the codes in this repository and running some demos yourself,
-please refer to the [Getting Started Guide](docs/getting-started.md).
+please refer to the [Getting started guide](docs/getting-started.md).
 
 ## Protocol Specification
 
-To get an inside look of DAAP design, please refer to the [Protocol Specification](docs/protocol.md).
+To get an inside look of DAAP design, please refer to the [Protocol specification](docs/protocol.md).
 
 ## Community
 

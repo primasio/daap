@@ -47,7 +47,7 @@
 
 ## 加入社区
 
-Slack: [slack.primas.io](https://slack.primas.io). 请加入 #daap 频道.
+Slack: [delta-mpc](https://join.slack.com/t/delta-mpc/shared_invite/zt-uaqm185x-52oCXcxoYvRlFwEoMUC8Tw). 请加入 #daap 频道.
 
 Email: [hi@primas.io](mailto:hi@primas.io)
 

@@ -45,7 +45,7 @@ To get an inside look of DAAP design, please refer to the [Protocol specificatio
 
 ## Community
 
-Slack: [slack.primas.io](https://slack.primas.io). And join the channel #daap.
+Slack: [delta-mpc](https://join.slack.com/t/delta-mpc/shared_invite/zt-uaqm185x-52oCXcxoYvRlFwEoMUC8Tw). And join the channel #daap.
 
 Email: [hi@primas.io](mailto:hi@primas.io)
 
